@@ -7,30 +7,36 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stage Timer">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#0B0B0C">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Stage Timer</title>
 <style>
-  :root { --fg: #fff; }
+  :root {
+    --fg: #fff;
+    --idle: #0B0B0C; --green: #0A7A3B; --yellow: #FFB800; --red: #C8102E;
+    --ink: #0B0B0C; --accent: #34C759;
+    --ease: cubic-bezier(.4, 0, .2, 1);
+  }
   * { box-sizing: border-box; }
   html, body {
     margin: 0; height: 100%; overflow: hidden;
-    background: #111; color: var(--fg);
-    font-family: -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
+    background: var(--idle); color: var(--fg);
+    font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
     -webkit-user-select: none; user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  body { transition: background-color .8s ease, color .8s ease; }
+  body { transition: background-color .6s var(--ease), color .25s linear; }
 
   /* ---------- zones ---------- */
-  body.z-idle   { background: #111; }
-  body.z-green  { background: #0f8a43; }
-  body.z-yellow { background: #ffc400; --fg: #111; }
-  body.z-red    { background: #d7262e; }
-  body.z-over   { animation: over 1.8s ease-in-out infinite alternate; }
-  @keyframes over { from { background: #a3001b; } to { background: #3b0008; } }
+  body.z-idle   { background: var(--idle); }
+  body.z-green  { background: var(--green); }
+  body.z-yellow { background: var(--yellow); --fg: var(--ink); }
+  body.z-red    { background: var(--red); }
+  body.z-over   { animation: over 2.4s ease-in-out infinite alternate; }
+  @keyframes over { from { background: #8A0016; } to { background: #5A000E; } }
 
   /* ---------- stage ---------- */
   #stage {
@@ -41,105 +47,127 @@
   }
   #time {
     font-weight: 800; font-variant-numeric: tabular-nums;
-    font-size: min(30vw, 62vh); line-height: .95; letter-spacing: -.02em;
+    font-size: min(36vw, 64vh); line-height: .9; letter-spacing: -.03em;
     white-space: nowrap;
-    transition: font-size .4s ease;
+    transition: font-size .4s var(--ease);
   }
-  #time.long  { font-size: min(19vw, 48vh); }
+  #time .colon { display: inline-block; margin: 0 .02em; position: relative; top: -.04em; }
+  #time .sign  { font-size: .5em; vertical-align: .3em; margin-right: .04em; font-weight: 700; }
+  #time.long  { font-size: min(22vw, 50vh); }
   #time.final { font-size: min(80vh, 70vw); }
-  #time.plus  { font-size: min(25vw, 58vh); }
-  #time.plus.long { font-size: min(16vw, 44vh); }
-  #time.tick  { animation: tick .9s cubic-bezier(.2,.9,.3,1.3); }
-  #time.shake { animation: shake .7s ease; }
-  @keyframes tick  { from { transform: scale(1.3); } to { transform: scale(1); } }
+  #time.tick  { animation: tick .6s cubic-bezier(.2,.9,.3,1.3); }
+  #time.shake { animation: shake .7s var(--ease); }
+  @keyframes tick  { from { transform: scale(1.18); } to { transform: scale(1); } }
   @keyframes shake {
-    0%,100% { transform: translateX(0) rotate(0); }
-    20% { transform: translateX(-2.5vw) rotate(-2deg); }
-    40% { transform: translateX(2.5vw) rotate(2deg); }
-    60% { transform: translateX(-1.5vw) rotate(-1deg); }
-    80% { transform: translateX(1.5vw) rotate(1deg); }
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-2vw); }
+    40% { transform: translateX(2vw); }
+    60% { transform: translateX(-1.2vw); }
+    80% { transform: translateX(1.2vw); }
   }
 
   #msg {
-    font-size: min(5.5vw, 8vh); font-weight: 700; text-align: center;
-    max-width: 94vw; min-height: 1.25em; line-height: 1.2;
-    padding: 0 2vw; opacity: 0;
+    position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + 9vh);
+    font-size: min(4.2vw, 6vh); font-weight: 600; letter-spacing: -.01em; line-height: 1.2;
+    text-align: center; white-space: nowrap; opacity: 0;
   }
-  #msg.in  { animation: msgIn .6s cubic-bezier(.2,.9,.3,1.25) forwards; }
-  #msg.out { transition: opacity 1.2s ease; opacity: 0 !important; animation: none; }
-  @keyframes msgIn { from { opacity: 0; transform: translateY(3vh) scale(.9); } to { opacity: 1; transform: none; } }
-
-  #bar-wrap { position: fixed; left: 0; right: 0; bottom: 0; height: 1.4vh; background: rgba(0,0,0,.15); }
-  #bar { height: 100%; width: 100%; background: var(--fg); opacity: .55; transform-origin: left; transition: transform .25s linear; }
-  body.z-idle #bar-wrap, body.z-over #bar-wrap { display: none; }
+  #msg.in  { animation: msgIn .45s cubic-bezier(.2,.9,.3,1.2) forwards; }
+  #msg.out { transition: opacity 1.2s var(--ease); opacity: 0 !important; animation: none; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
 
   #hint {
-    position: fixed; top: calc(env(safe-area-inset-top) + 2vh); left: 0; right: 0; text-align: center;
-    font-size: 2.4vh; font-weight: 600; opacity: 0; transition: opacity .6s; pointer-events: none; color: var(--fg);
+    position: fixed; top: calc(env(safe-area-inset-top) + 2.5vh); left: 0; right: 0; text-align: center;
+    font-size: 15px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    opacity: 0; transition: opacity .6s var(--ease); pointer-events: none; color: var(--fg);
   }
-  #hint.show { opacity: .6; }
+  #hint.show { opacity: .55; }
 
-  body.paused #time { animation: blink 1.6s ease-in-out infinite; }
-  @keyframes blink { 50% { opacity: .35; } }
+  body.paused #time { animation: blink 2.2s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .6; } }
 
-  /* panel open: shrink the clock & lift it */
-  body.panel-open #stage { justify-content: flex-start; padding-top: calc(env(safe-area-inset-top) + 3vh); }
+  /* panel open: smaller clock, centred in the space above the panel */
+  body.panel-open #stage { padding-bottom: 300px; }
   body.panel-open #time { font-size: min(22vw, 30vh); }
   body.panel-open #time.long { font-size: min(15vw, 26vh); }
-  body.panel-open #msg { font-size: min(4vw, 5vh); }
+  body.panel-open #msg { position: static; margin-top: 1.5vh; font-size: min(3.4vw, 4.5vh); }
 
   /* ---------- control panel ---------- */
   #panel {
-    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 2.5vh);
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 20px);
     transform: translate(-50%, 120%); opacity: 0;
-    width: min(96vw, 900px);
-    background: rgba(18,18,20,.88); color: #fff;
-    -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4);
-    border-radius: 26px; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
-    transition: transform .45s cubic-bezier(.2,.9,.25,1), opacity .3s;
-    display: flex; flex-direction: column; gap: 12px;
+    width: min(96vw, 860px);
+    background: rgba(20,20,22,.9); color: #fff;
+    -webkit-backdrop-filter: blur(24px) saturate(1.5); backdrop-filter: blur(24px) saturate(1.5);
+    border-radius: 28px; padding: 16px;
+    box-shadow: 0 0 0 .5px rgba(255,255,255,.12) inset, 0 24px 60px rgba(0,0,0,.45);
+    transition: transform .45s cubic-bezier(.2,.9,.25,1), opacity .3s var(--ease);
   }
   body.panel-open #panel { transform: translate(-50%, 0); opacity: 1; }
-  .group { display: none; flex-direction: column; gap: 12px; }
+  .group { display: none; flex-direction: column; gap: 14px; }
   body.idle   .idle-only   { display: flex; }
   body.paused .paused-only { display: flex; }
 
-  .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  .row { display: flex; gap: 8px; justify-content: center; align-items: flex-end; }
+  .presets { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
   button {
-    font: inherit; font-size: 19px; font-weight: 600; color: #fff;
-    background: rgba(255,255,255,.12); border: 0; border-radius: 14px;
-    min-height: 54px; padding: 0 18px; cursor: pointer;
-    transition: transform .12s ease, background .2s;
+    font: inherit; font-size: 18px; font-weight: 600; color: #fff;
+    background: rgba(255,255,255,.1); border: 0; border-radius: 12px;
+    min-height: 52px; padding: 0 18px; cursor: pointer;
+    transition: transform .12s var(--ease), background-color .2s var(--ease), box-shadow .2s var(--ease);
   }
   button:active { transform: scale(.96); }
-  .presets button { min-width: 64px; font-variant-numeric: tabular-nums; }
-  .presets button.on { background: #fff; color: #111; }
-  button.big { font-size: 24px; min-height: 68px; border-radius: 18px; }
-  button.go { background: #12a150; }
-  button.warn { background: #b3261e; }
-  button.toggle.on { background: rgba(255,255,255,.28); }
-  label { display: flex; align-items: center; gap: 8px; font-size: 17px; color: rgba(255,255,255,.8); }
-  input {
-    font: inherit; font-size: 19px; width: 76px; min-height: 48px; text-align: center;
-    color: #fff; background: rgba(255,255,255,.12); border: 0; border-radius: 12px;
-    -webkit-user-select: text; user-select: text;
+  .presets button { padding: 0; font-variant-numeric: tabular-nums; }
+  .presets button.on { background: rgba(255,255,255,.22); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.6); }
+  button.big { font-size: 22px; min-height: 64px; border-radius: 14px; }
+  button.go { background: var(--accent); color: #04210F; }
+  button.destructive { color: #FF453A; background: rgba(255,69,58,.14); }
+  .row.adjust button { flex: 1; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .field span {
+    font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: rgba(255,255,255,.6); display: flex; align-items: center; gap: 6px;
   }
-  .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
-  .dot.y { background: #ffc400; } .dot.r { background: #d7262e; }
-  .sub { text-align: center; font-size: 14px; color: rgba(255,255,255,.5); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot.y { background: var(--yellow); } .dot.r { background: #FF453A; }
+  input {
+    font: inherit; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums;
+    width: 100%; min-height: 52px; padding: 0 14px;
+    color: #fff; background: rgba(255,255,255,.1); border: 0; border-radius: 12px;
+    -webkit-user-select: text; user-select: text; outline: none;
+  }
+  input:focus { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.6); }
+
+  /* iOS-style switches */
+  .switch { display: flex; align-items: center; gap: 12px; padding: 0 14px 0 18px; flex: 1; justify-content: space-between; }
+  .switch i {
+    position: relative; width: 51px; height: 31px; border-radius: 16px; flex: none;
+    background: rgba(120,120,128,.36); transition: background-color .25s var(--ease);
+  }
+  .switch i::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
+    background: #fff; box-shadow: 0 3px 8px rgba(0,0,0,.15), 0 1px 1px rgba(0,0,0,.16);
+    transition: transform .3s cubic-bezier(.3,1.3,.5,1);
+  }
+  .switch[aria-checked="true"] i { background: var(--accent); }
+  .switch[aria-checked="true"] i::after { transform: translateX(20px); }
+  #fs { flex: 1; }
+
+  .sub { text-align: center; font-size: 13px; color: rgba(255,255,255,.45); }
+  @media (hover: none) { .sub { display: none; } }
 
   /* ---------- comedy fx ---------- */
   #fx { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
   .fly { position: absolute; line-height: 1; font-size: 18vh; will-change: transform; }
-  .plane { top: 8vh; left: 0; animation: plane 4.5s ease-in forwards; }
-  @keyframes plane { from { transform: translate(-25vw, 0) rotate(50deg); } to { transform: translate(115vw, 55vh) rotate(50deg); } }
-  .spin { top: 12vh; left: 0; animation: spin 3.8s linear forwards; }
+  .plane { top: 4vh; left: 0; animation: plane 3.2s ease-in-out forwards; }
+  @keyframes plane { from { transform: translate(-25vw, 0) rotate(45deg); } to { transform: translate(115vw, 14vh) rotate(45deg); } }
+  .spin { top: 6vh; left: 0; animation: spin 3.8s linear forwards; }
   @keyframes spin { from { transform: translateX(-25vw) rotate(0); } to { transform: translateX(115vw) rotate(900deg); } }
-  .pop { top: 4vh; left: 50%; font-size: 15vh; animation: popfx 3s ease forwards; }
+  .pop { top: 4vh; left: 50%; font-size: 15vh; animation: popfx 2.2s ease forwards; }
   @keyframes popfx {
     0% { transform: translate(-50%, 0) scale(0); }
-    18% { transform: translate(-50%, 0) scale(1.35); }
-    28%, 75% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+    18% { transform: translate(-50%, 0) scale(1.3); }
+    28%, 72% { transform: translate(-50%, 0) scale(1); opacity: 1; }
     100% { transform: translate(-50%, -30vh) scale(.8); opacity: 0; }
   }
   .hook { top: -4vh; left: 0; font-size: 34vh; transform-origin: 50% 0; animation: hook 5.5s ease-in-out forwards; }
@@ -165,34 +193,33 @@
   <div id="time">10:00</div>
   <div id="msg"></div>
 </main>
-<div id="bar-wrap"><div id="bar"></div></div>
-<div id="hint">tap anywhere to pause</div>
+<div id="hint">Tap anywhere to pause</div>
 <div id="fx"></div>
 
 <section id="panel">
   <div class="group idle-only">
-    <div class="row presets" id="presets"></div>
+    <div class="presets" id="presets"></div>
     <div class="row">
-      <label>Custom <input id="custom" type="number" inputmode="decimal" min="0.5" step="0.5"> min</label>
-      <label><span class="dot y"></span>Yellow at <input id="warn" type="number" inputmode="decimal" min="0" step="0.5"> min</label>
-      <label><span class="dot r"></span>Red at <input id="danger" type="number" inputmode="decimal" min="0" step="0.5"> min</label>
+      <label class="field"><span>Custom (min)</span><input id="custom" type="number" inputmode="decimal" min="0.5" step="0.5"></label>
+      <label class="field"><span><i class="dot y"></i>Yellow at (min)</span><input id="warn" type="number" inputmode="decimal" min="0" step="0.5"></label>
+      <label class="field"><span><i class="dot r"></i>Red at (min)</span><input id="danger" type="number" inputmode="decimal" min="0" step="0.5"></label>
     </div>
     <div class="row">
-      <button class="toggle" id="comedy"></button>
-      <button class="toggle" id="sound"></button>
-      <button id="fs">⛶ Full screen</button>
+      <button class="switch" id="comedy" role="switch" aria-checked="true">Comedy <i></i></button>
+      <button class="switch" id="sound" role="switch" aria-checked="false">Sound <i></i></button>
+      <button id="fs">Full screen</button>
     </div>
     <button class="big go" id="start">Start</button>
   </div>
 
   <div class="group paused-only">
-    <div class="row">
+    <div class="row adjust">
       <button id="minus">−1 min</button>
       <button id="plus">+1 min</button>
-      <button id="reset" class="warn">Reset</button>
+      <button id="reset" class="destructive">Reset</button>
     </div>
     <button class="big go" id="resume">Resume</button>
-    <div class="sub">Space = start/pause · ↑/↓ = ±1 min · R = reset (when paused)</div>
+    <div class="sub">Space start/pause · ↑ ↓ ±1 min · R reset</div>
   </div>
 </section>
 
@@ -200,7 +227,7 @@
 (() => {
   'use strict';
   const $ = s => document.querySelector(s);
-  const timeEl = $('#time'), msgEl = $('#msg'), barEl = $('#bar'), fxEl = $('#fx'), hintEl = $('#hint');
+  const timeEl = $('#time'), msgEl = $('#msg'), fxEl = $('#fx'), hintEl = $('#hint');
   const body = document.body;
   const MIN = 60e3;
 
@@ -241,28 +268,28 @@
     const D = S.durationMs, w = warnMs(), d = dangerMs(), c = S.comedy;
     const ev = [];
     if (c && D >= 4 * MIN && D / 2 > w + 30e3)
-      ev.push({ id: 'half', at: D / 2, msg: 'Halfway there! Looking good 🏔️', fx: 'pop:🏔️' });
+      ev.push({ id: 'half', at: D / 2, msg: 'Halfway there. Looking good 🏔️', fx: 'pop:🏔️' });
     ev.push({ id: 'warn', at: w, beep: 1,
-      msg: c ? `${words(w)} left. Time to start wrapping up 🌯` : `${words(w)} remaining`, fx: 'spin:🌯' });
+      msg: c ? `${words(w)}. Start wrapping up 🌯` : `${words(w)} remaining`, fx: 'spin:🌯' });
     if (c && w > 2 * MIN + 15e3 && d < 2 * MIN - 15e3)
-      ev.push({ id: 'two', at: 2 * MIN, msg: '2 minutes. Maybe skip the backup slides 🙈', fx: 'pop:🙈' });
+      ev.push({ id: 'two', at: 2 * MIN, msg: '2 minutes. Skip the backup slides 🙈', fx: 'pop:🙈' });
     ev.push({ id: 'danger', at: d, beep: 2,
       msg: c ? `${words(d)} left! Land the plane ✈️` : `${words(d)} remaining`, fx: 'plane:✈️' });
     if (c && d > 40e3)
       ev.push({ id: 'thirty', at: 30e3, msg: '30 seconds. Say “In conclusion…” 🎓', fx: 'pop:🎓' });
     ev.push({ id: 'zero', at: 0, sticky: true, beep: 'end',
-      msg: c ? 'TIME! 🛑 Thank you, goodnight!' : 'Time', fx: c ? 'rain:🎉🎊👏⏰' : '' });
+      msg: c ? 'TIME! Thank you, goodnight 🛑' : 'Time', fx: c ? 'rain:🎉🎊👏⏰' : '' });
 
     if (c) {
       const over = [
         [20,  'Wrap it up, friend 🎁', 'pop:🎁'],
-        [45,  'The coffee break is getting nervous ☕', 'rain:☕'],
-        [75,  'The next speaker is doing stretches 🧘', 'pop:🧘'],
-        [110, 'Your slides miss you. End them 🥲', 'rain:💧'],
-        [150, '“Any questions?” is a lovely sentence 👋', 'pop:👋'],
+        [45,  'Coffee break is getting nervous ☕', 'pop:☕'],
+        [75,  'Next speaker is stretching 🧘', 'pop:🧘'],
+        [110, 'Your slides miss you. End them 🥲', 'pop:🥲'],
+        [150, 'Try saying “Any questions?” 👋', 'pop:👋'],
         [200, 'The hook is coming… 🪝', 'hook:🪝'],
-        [260, 'The snacks are gone. All of them 🍪', 'rain:🍪'],
-        [330, 'Somewhere, a moderator weeps 😭', 'rain:😭'],
+        [260, 'The snacks are gone. All of them 🍪', 'pop:🍪'],
+        [330, 'Somewhere, a moderator weeps 😭', 'pop:😭'],
         [420, 'Congrats, this is now a keynote 🎬', 'pop:🎬'],
       ];
       const loop = [
@@ -319,7 +346,7 @@
     fxEl.appendChild(el);
     setTimeout(() => el.remove(), 6000);
   }
-  function rain(chars, n = 34) {
+  function rain(chars, n = 20) {
     for (let i = 0; i < n; i++) {
       const el = document.createElement('span');
       el.className = 'drop';
@@ -389,13 +416,11 @@
     if (!cls && text.replace('+', '').split(':').length === 3) cls = 'long';
 
     if (text !== lastText) {
-      timeEl.textContent = text;
+      timeEl.innerHTML = text.replace('+', '<span class="sign">+</span>').replace(/:/g, '<span class="colon">:</span>');
       timeEl.classList.toggle('long', cls === 'long');
       timeEl.classList.toggle('final', cls === 'final');
-      timeEl.classList.toggle('plus', text[0] === '+');
+      fitTime();
       if (cls === 'final') { timeEl.classList.remove('tick', 'shake'); void timeEl.offsetWidth; timeEl.classList.add('tick'); }
-      // in overtime, wobble every 15 s between gags
-      if (r < 0 && S.status === 'running' && Math.floor(-r / 1000) % 15 === 7) shake();
       lastText = text;
     }
 
@@ -405,17 +430,27 @@
       body.classList.add(zone);
       lastZone = zone;
     }
-    barEl.style.transform = `scaleX(${Math.max(0, Math.min(1, r / S.durationMs))})`;
 
     if (S.status === 'running') checkEvents(r);
   }
+
+  // shrink the digits if a long string (e.g. "+10:41") would overflow the screen
+  function fitTime() {
+    timeEl.style.transition = 'none';
+    timeEl.style.fontSize = '';
+    const max = innerWidth * .94, w = timeEl.scrollWidth;
+    if (w > max) timeEl.style.fontSize = (parseFloat(getComputedStyle(timeEl).fontSize) * max / w) + 'px';
+    void timeEl.offsetWidth; timeEl.style.transition = '';
+  }
+  addEventListener('resize', () => { lastText = ''; render(); });
 
   function setStatus(st) {
     S.status = st;
     body.classList.toggle('idle', st === 'idle');
     body.classList.toggle('paused', st === 'paused');
     body.classList.toggle('panel-open', st !== 'running');
-    save(); render();
+    lastText = ''; save(); render();
+    setTimeout(fitTime, 450);
   }
 
   // ---------- actions ----------
@@ -475,10 +510,8 @@
     presetsEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', +b.dataset.min === min));
     $('#custom').value = +min.toFixed(2);
     $('#warn').value = S.warnMin; $('#danger').value = S.dangerMin;
-    $('#comedy').textContent = S.comedy ? '🤡 Comedy: On' : '🤡 Comedy: Off';
-    $('#comedy').classList.toggle('on', S.comedy);
-    $('#sound').textContent = S.sound ? '🔔 Sound: On' : '🔕 Sound: Off';
-    $('#sound').classList.toggle('on', S.sound);
+    $('#comedy').setAttribute('aria-checked', S.comedy);
+    $('#sound').setAttribute('aria-checked', S.sound);
   }
   $('#custom').addEventListener('change', e => setDuration(parseFloat(e.target.value)));
   $('#warn').addEventListener('change', e => { const v = parseFloat(e.target.value); if (v >= 0) S.warnMin = v; syncUI(); save(); });

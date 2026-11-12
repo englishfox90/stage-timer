@@ -1,5 +1,5 @@
 // Offline-first: serve from cache instantly, refresh the cache in the background.
-const CACHE = 'stage-timer-v1';
+const CACHE = 'stage-timer-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './icon-512-maskable.png', './apple-touch-icon.png'];
 
